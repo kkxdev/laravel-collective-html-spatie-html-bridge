@@ -6,6 +6,7 @@ namespace Kkxdev\HtmlCompat;
 
 use Kkxdev\HtmlCompat\Contracts\FormBuilderInterface;
 use Kkxdev\HtmlCompat\Support\AttributesBag;
+use Kkxdev\HtmlCompat\Support\Componentable;
 use Kkxdev\HtmlCompat\Support\ValueResolver;
 use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Http\Request;
@@ -26,6 +27,7 @@ use Illuminate\Support\Traits\Macroable;
  */
 class FormBuilder implements FormBuilderInterface
 {
+    use Componentable;
     use Macroable {
         __call as macroCall;
         __callStatic as macroCallStatic;
@@ -348,6 +350,136 @@ class FormBuilder implements FormBuilderInterface
     }
 
     // =========================================================================
+    // Additional input types (LaravelCollective parity)
+    // =========================================================================
+
+    /** Form::date() — DateTimeInterface values are formatted as Y-m-d. */
+    public function date(string $name, mixed $value = null, array $options = []): HtmlString
+    {
+        return $this->buildInput('date', $name, $value, $options, 'Y-m-d');
+    }
+
+    public function time(string $name, mixed $value = null, array $options = []): HtmlString
+    {
+        return $this->buildInput('time', $name, $value, $options, 'H:i');
+    }
+
+    public function datetime(string $name, mixed $value = null, array $options = []): HtmlString
+    {
+        return $this->buildInput('datetime', $name, $value, $options, \DateTimeInterface::RFC3339);
+    }
+
+    public function datetimeLocal(string $name, mixed $value = null, array $options = []): HtmlString
+    {
+        return $this->buildInput('datetime-local', $name, $value, $options, 'Y-m-d\TH:i');
+    }
+
+    public function month(string $name, mixed $value = null, array $options = []): HtmlString
+    {
+        return $this->buildInput('month', $name, $value, $options, 'Y-m');
+    }
+
+    public function week(string $name, mixed $value = null, array $options = []): HtmlString
+    {
+        return $this->buildInput('week', $name, $value, $options, 'Y-\WW');
+    }
+
+    public function url(string $name, mixed $value = null, array $options = []): HtmlString
+    {
+        return $this->buildInput('url', $name, $value, $options);
+    }
+
+    public function tel(string $name, mixed $value = null, array $options = []): HtmlString
+    {
+        return $this->buildInput('tel', $name, $value, $options);
+    }
+
+    public function search(string $name, mixed $value = null, array $options = []): HtmlString
+    {
+        return $this->buildInput('search', $name, $value, $options);
+    }
+
+    public function color(string $name, mixed $value = null, array $options = []): HtmlString
+    {
+        return $this->buildInput('color', $name, $value, $options);
+    }
+
+    public function range(string $name, mixed $value = null, array $options = []): HtmlString
+    {
+        return $this->buildInput('range', $name, $value, $options);
+    }
+
+    /** Form::reset() — <input type="reset">. */
+    public function reset(?string $value = null, array $options = []): HtmlString
+    {
+        $element = html()->input('reset');
+        if ($value !== null) {
+            $element = $element->attribute('value', $value);
+        }
+        $element = AttributesBag::apply($element, $options);
+
+        return new HtmlString((string) $element);
+    }
+
+    /** Form::image() — <input type="image" src="…">. */
+    public function image(string $url, ?string $name = null, array $options = []): HtmlString
+    {
+        $options['src'] = $this->url->asset($url);
+
+        $element = html()->input('image', $name);
+        $element = AttributesBag::apply($element, $options);
+
+        return new HtmlString((string) $element);
+    }
+
+    /**
+     * Form::datalist() — list may be [value => label] or a plain list of values.
+     */
+    public function datalist(string $id, array $list = [], array $options = []): HtmlString
+    {
+        $options['id'] = $id;
+        $html = '<datalist' . AttributesBag::renderToString($options) . '>';
+
+        foreach ($list as $key => $label) {
+            $html .= is_int($key)
+                ? '<option value="' . e((string) $label) . '">'
+                : '<option value="' . e((string) $key) . '">' . e((string) $label) . '</option>';
+        }
+
+        return new HtmlString($html . '</datalist>');
+    }
+
+    // =========================================================================
+    // Select helpers
+    // =========================================================================
+
+    /** Form::selectRange('age', 18, 65) */
+    public function selectRange(string $name, int|string $begin, int|string $end, mixed $selected = null, array $options = []): HtmlString
+    {
+        $range = range($begin, $end);
+
+        return $this->select($name, array_combine($range, $range), $selected, $options);
+    }
+
+    /** Form::selectYear('year', 2000, 2030) — identical to selectRange. */
+    public function selectYear(string $name, int|string $begin, int|string $end, mixed $selected = null, array $options = []): HtmlString
+    {
+        return $this->selectRange($name, $begin, $end, $selected, $options);
+    }
+
+    /** Form::selectMonth('month') — keys 1..12, labels are month names. */
+    public function selectMonth(string $name, mixed $selected = null, array $options = [], string $format = 'F'): HtmlString
+    {
+        $months = [];
+
+        foreach (range(1, 12) as $month) {
+            $months[$month] = date($format, mktime(0, 0, 0, $month, 1));
+        }
+
+        return $this->select($name, $months, $selected, $options);
+    }
+
+    // =========================================================================
     // Value resolution (public for callers that need it directly)
     // =========================================================================
 
@@ -362,6 +494,10 @@ class FormBuilder implements FormBuilderInterface
 
     public function __call(string $method, array $parameters): mixed
     {
+        if (static::hasComponent($method)) {
+            return $this->renderComponent($method, $parameters);
+        }
+
         if (static::hasMacro($method)) {
             return $this->macroCall($method, $parameters);
         }
@@ -378,9 +514,13 @@ class FormBuilder implements FormBuilderInterface
     // Internals
     // =========================================================================
 
-    private function buildInput(string $type, string $name, mixed $value, array $options): HtmlString
+    private function buildInput(string $type, string $name, mixed $value, array $options, ?string $dateFormat = null): HtmlString
     {
         $value = $this->valueResolver->resolve($name, $value);
+
+        if ($dateFormat !== null && $value instanceof \DateTimeInterface) {
+            $value = $value->format($dateFormat);
+        }
 
         $element = html()->input($type, $name, $value !== null ? (string) $value : null);
         $element = AttributesBag::apply($element, $options);

@@ -47,7 +47,7 @@ class HtmlCompatServiceProvider extends ServiceProvider
     private function registerHtmlBuilder(): void
     {
         $this->app->singleton(HtmlBuilder::class, function ($app) {
-            return new HtmlBuilder();
+            return new HtmlBuilder($app->make(UrlGenerator::class));
         });
 
         $this->app->alias(HtmlBuilder::class, 'html.compat');
