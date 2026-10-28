@@ -1,5 +1,10 @@
 # laravel-collective-html-spatie-html-bridge
 
+[![Latest Version](https://img.shields.io/packagist/v/kkxdev/laravel-collective-html-spatie-html-bridge.svg)](https://packagist.org/packages/kkxdev/laravel-collective-html-spatie-html-bridge)
+[![Tests](https://github.com/kkxdev/laravel-collective-html-spatie-html-bridge/actions/workflows/tests.yml/badge.svg)](https://github.com/kkxdev/laravel-collective-html-spatie-html-bridge/actions)
+[![License](https://img.shields.io/packagist/l/kkxdev/laravel-collective-html-spatie-html-bridge.svg)](LICENSE)
+
+
 > Drop-in compatibility layer — keep every existing `Form::` and `Html::` Blade call working while the rendering engine
 > moves from the abandoned `laravelcollective/html` to the actively-maintained `spatie/laravel-html`.
 
@@ -24,8 +29,18 @@ This package sits between your templates and Spatie's library. It:
 
 ## Requirements
 
-| Requirement         | Version                   |
-|---------------------|---------------------------|
+| Requirement         | Version                                        |
+|---------------------|------------------------------------------------|
+| PHP                 | ^8.0                                           |
+| Laravel             | 8, 9, 10, 11, 12, 13                           |
+| spatie/laravel-html | ^3.0                                           |
+
+Tested on each Laravel release with a PHP version it officially supports (L8 → PHP 8.0/8.1, L9 → 8.0/8.2,
+L10 → 8.1/8.3, L11 → 8.2/8.4, L12/L13 → 8.3). Laravel 8 apps on PHP 7.x cannot use this package (PHP 8.0 minimum).
+
+This package conflicts with `laravelcollective/html`: remove it before installing.
+
+---------------------|---------------------------|
 | PHP                 | ^8.0                      |
 | Laravel             | ^8.0 (also tested on 9.x) |
 | spatie/laravel-html | ^3.0                      |
@@ -161,6 +176,32 @@ Any additional key is passed through as a raw HTML attribute on `<form>`.
 ```blade
 {!! Form::open(['route' => 'users.store', 'class' => 'needs-validation', 'novalidate' => true]) !!}
 ```
+
+---
+
+### Additional methods (LaravelCollective parity)
+
+```blade
+{{-- Inputs: DateTimeInterface values are formatted automatically --}}
+{!! Form::date('born', $carbon) !!}  {{-- Y-m-d --}}
+{!! Form::time('at') !!}  {!! Form::datetimeLocal('when') !!}  {!! Form::month('m') !!}  {!! Form::week('w') !!}
+{!! Form::url('site') !!}  {!! Form::tel('phone') !!}  {!! Form::search('q') !!}  {!! Form::color('c') !!}  {!! Form::range('r') !!}
+{!! Form::reset('Clear') !!}  {!! Form::image('img/go.png', 'go') !!}  {!! Form::datalist('cities', ['Delhi']) !!}
+
+{{-- Selects --}}
+{!! Form::selectRange('age', 18, 65) !!}  {!! Form::selectYear('y', 2000, 2030) !!}  {!! Form::selectMonth('m') !!}
+
+{{-- Components (Form and Html) --}}
+@php Form::component('bsText', 'components.form.text', ['name', 'value' => null, 'attributes' => []]); @endphp
+{!! Form::bsText('email') !!}
+
+{{-- Html --}}
+{!! Html::linkRoute('users.show', 'View', ['id' => 5]) !!}  {!! Html::linkAction('UserController@index') !!}
+{!! Html::linkAsset('a.pdf') !!}  {!! Html::mailto('a@b.c') !!}  {!! Html::ul(['a', 'b']) !!}
+{!! Html::favicon('/f.ico') !!}  {!! Html::meta('author', 'me') !!}  {!! Html::nbsp(2) !!}
+```
+
+Global helpers `link_to()`, `link_to_asset()`, `link_to_route()` and `link_to_action()` are also provided.
 
 ---
 
@@ -368,7 +409,7 @@ composer install
 vendor/bin/phpunit
 ```
 
-The test suite runs on PHP 8.0 with Orchestra Testbench v6 (Laravel 8 environment) and covers:
+The test suite runs on Orchestra Testbench (Laravel 8–13) and covers:
 
 - Form open / close / method spoofing / CSRF
 - All input types and their attribute handling

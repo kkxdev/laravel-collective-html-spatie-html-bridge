@@ -1,5 +1,5 @@
 /vendor/
+/composer.lock
 .claude
 .idea
 .phpunit.result.cache
-.
