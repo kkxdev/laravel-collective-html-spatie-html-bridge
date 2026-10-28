@@ -381,7 +381,7 @@ class FormBuilder implements FormBuilderInterface
 
     public function week(string $name, mixed $value = null, array $options = []): HtmlString
     {
-        return $this->buildInput('week', $name, $value, $options, 'Y-\WW');
+        return $this->buildInput('week', $name, $value, $options, 'o-\WW');
     }
 
     public function url(string $name, mixed $value = null, array $options = []): HtmlString

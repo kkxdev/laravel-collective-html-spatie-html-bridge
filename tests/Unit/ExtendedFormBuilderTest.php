@@ -57,6 +57,14 @@ class ExtendedFormBuilderTest extends TestCase
         $this->assertStringContainsString('value="2026-03-09T14:05"', (string) $this->form->datetimeLocal('dt', $date));
     }
 
+    public function test_week_uses_iso_week_numbering_year(): void
+    {
+        // 2024-12-30 belongs to ISO week 1 of 2025
+        $html = (string) $this->form->week('w', Carbon::create(2024, 12, 30));
+
+        $this->assertStringContainsString('value="2025-W01"', $html);
+    }
+
     public function test_date_uses_model_value(): void
     {
         $this->form->model(['born' => Carbon::create(2000, 1, 2)]);

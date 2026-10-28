@@ -60,6 +60,30 @@ class ExtendedHtmlBuilderTest extends TestCase
         $this->assertStringContainsString('href="http://localhost/home"', $html);
     }
 
+    public function test_link_normalizes_relative_urls_and_honours_secure(): void
+    {
+        $this->assertStringContainsString('href="http://localhost/about"', (string) $this->html->link('/about', 'About'));
+        $this->assertStringContainsString('href="https://localhost/about"', (string) $this->html->link('/about', 'About', [], true));
+        $this->assertStringContainsString('href="https://example.com/x"', (string) $this->html->link('https://example.com/x'));
+        $this->assertStringContainsString('href="#top"', (string) $this->html->link('#top', 'Top'));
+        $this->assertStringContainsString('href="mailto:a@b.c"', (string) $this->html->link('mailto:a@b.c'));
+    }
+
+    public function test_email_escapes_html(): void
+    {
+        $out = $this->html->email('"><script>x</script>@a.c');
+
+        $this->assertStringNotContainsString('<script>', $out);
+        $this->assertStringContainsString('&#64;a.c', $out);
+    }
+
+    public function test_favicon_uses_asset_only_when_secure_given(): void
+    {
+        $this->assertStringContainsString('href="/f.ico"', (string) $this->html->favicon('/f.ico'));
+        $this->assertStringContainsString('href="https://localhost/f.ico"', (string) $this->html->favicon('f.ico', [], true));
+        $this->assertStringContainsString('href="http://localhost/f.ico"', (string) $this->html->favicon('f.ico', [], false));
+    }
+
     public function test_mailto_and_email(): void
     {
         $this->assertStringContainsString('href="mailto:a@b.c"', (string) $this->html->mailto('a@b.c', 'Mail'));

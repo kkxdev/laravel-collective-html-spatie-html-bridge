@@ -40,11 +40,6 @@ L10 → 8.1/8.3, L11 → 8.2/8.4, L12/L13 → 8.3). Laravel 8 apps on PHP 7.x ca
 
 This package conflicts with `laravelcollective/html`: remove it before installing.
 
----------------------|---------------------------|
-| PHP                 | ^8.0                      |
-| Laravel             | ^8.0 (also tested on 9.x) |
-| spatie/laravel-html | ^3.0                      |
-
 ---
 
 ## Installation

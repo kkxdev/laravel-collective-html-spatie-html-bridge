@@ -45,6 +45,9 @@ class HtmlBuilder implements HtmlBuilderInterface
         ?bool   $secure     = null,
         bool    $escape     = true
     ): HtmlString {
+        // Same as LaravelCollective: relative URLs become absolute and $secure forces https
+        $url = $this->url->to($url, [], $secure);
+
         $content = $title ?? $url;
 
         if ($escape) {
@@ -174,11 +177,15 @@ class HtmlBuilder implements HtmlBuilderInterface
     /** Html::email() — the address with "@" encoded to deter naive scrapers. */
     public function email(string $email): string
     {
-        return str_replace('@', '&#64;', $email);
+        return str_replace('@', '&#64;', htmlspecialchars($email, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
     }
 
     public function favicon(string $url, array $attributes = [], ?bool $secure = null): HtmlString
     {
+        if ($secure !== null) {
+            $url = $this->url->asset($url, $secure);
+        }
+
         $attributes = array_merge(['rel' => 'shortcut icon', 'type' => 'image/x-icon', 'href' => $url], $attributes);
 
         return new HtmlString('<link' . AttributesBag::renderToString($attributes) . '>');
