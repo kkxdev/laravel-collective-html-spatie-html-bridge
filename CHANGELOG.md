@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- `Form::submit()` now renders `<input type="submit" value="…">` (LaravelCollective output) instead of a `<button>`.
+- `Form::open(['action' => '/raw/url'])` falls back to the literal string when it is not a defined controller action.
+- `Form::week()` uses the ISO week-numbering year.
+- `Html::link()` now passes URLs through `UrlGenerator::to()` (as LaravelCollective does): relative links become
+  absolute and `$secure = true` forces https. `Html::email()` escapes HTML; `Html::favicon()` honours `$secure`.
+
 ## 1.0.0
 
 - Drop-in `Form::` / `Html::` facades backed by `spatie/laravel-html` v3.

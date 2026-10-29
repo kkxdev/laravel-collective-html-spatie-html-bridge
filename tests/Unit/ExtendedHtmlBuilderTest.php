@@ -52,10 +52,10 @@ class ExtendedHtmlBuilderTest extends TestCase
 
     public function test_link_action(): void
     {
-        Route::get('/home', [DummyController::class, 'index']);
+        Route::get('/home', [\Kkxdev\HtmlCompat\Tests\Fixtures\DummyController::class, 'index']);
         app('router')->getRoutes()->refreshActionLookups();
 
-        $html = (string) $this->html->linkAction(DummyController::class . '@index', 'Home');
+        $html = (string) $this->html->linkAction(\Kkxdev\HtmlCompat\Tests\Fixtures\DummyController::class . '@index', 'Home');
 
         $this->assertStringContainsString('href="http://localhost/home"', $html);
     }
@@ -136,13 +136,5 @@ class ExtendedHtmlBuilderTest extends TestCase
         $this->assertStringContainsString('href="https://example.com"', (string) link_to('https://example.com', 'Ex'));
         $this->assertStringContainsString('href="http://localhost/a"', (string) link_to_asset('a'));
         $this->assertStringContainsString('href="http://localhost/r"', (string) link_to_route('r', 'R'));
-    }
-}
-
-class DummyController
-{
-    public function index(): string
-    {
-        return '';
     }
 }

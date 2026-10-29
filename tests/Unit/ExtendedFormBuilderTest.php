@@ -146,6 +146,32 @@ class ExtendedFormBuilderTest extends TestCase
         $this->assertSame('field:given', trim((string) $this->form->bsText('field', 'given')));
     }
 
+    public function test_submit_renders_input_like_collective(): void
+    {
+        $html = (string) $this->form->submit('Save', ['class' => 'btn']);
+
+        $this->assertStringStartsWith('<input', $html);
+        $this->assertStringContainsString('type="submit"', $html);
+        $this->assertStringContainsString('value="Save"', $html);
+        $this->assertStringContainsString('class="btn"', $html);
+        $this->assertStringNotContainsString('<button', $html);
+
+        $this->assertStringNotContainsString('value=', (string) $this->form->submit());
+    }
+
+    public function test_open_accepts_raw_action_url_and_real_controller_actions(): void
+    {
+        $this->assertStringContainsString('action="/raw/url"', (string) $this->form->open(['action' => '/raw/url']));
+
+        \Illuminate\Support\Facades\Route::get('/home', [\Kkxdev\HtmlCompat\Tests\Fixtures\DummyController::class, 'index']);
+        app('router')->getRoutes()->refreshActionLookups();
+
+        $this->assertStringContainsString(
+            'action="http://localhost/home"',
+            (string) $this->form->open(['action' => \Kkxdev\HtmlCompat\Tests\Fixtures\DummyController::class . '@index', 'method' => 'GET'])
+        );
+    }
+
     public function test_unknown_method_still_degrades_gracefully(): void
     {
         $this->assertSame('', (string) $this->form->doesNotExist());

@@ -58,7 +58,8 @@ class FormBuilder implements FormBuilderInterface
      *   method  – HTTP verb; PUT/PATCH/DELETE are spoofed via hidden _method
      *   url     – explicit URL string or [url, param, …] array
      *   route   – named route string or [name, param, …] array
-     *   action  – controller action string or [Controller@method, param, …] array
+     *   action  – controller action string or [Controller@method, param, …] array;
+     *             a string that is not a defined action is used as the literal action URL
      *   files   – bool; when true sets enctype="multipart/form-data"
      */
     public function open(array $options = []): HtmlString
@@ -318,7 +319,11 @@ class FormBuilder implements FormBuilderInterface
 
     public function submit(?string $value = null, array $options = []): HtmlString
     {
-        $element = html()->submit($value);
+        // LaravelCollective renders <input type="submit">, not a <button>
+        $element = html()->input('submit');
+        if ($value !== null) {
+            $element = $element->attribute('value', $value);
+        }
         $element = AttributesBag::apply($element, $options);
 
         return new HtmlString((string) $element);
@@ -559,13 +564,20 @@ class FormBuilder implements FormBuilderInterface
         }
 
         if (isset($options['action'])) {
-            if (is_array($options['action'])) {
-                return $this->url->action(
-                    $options['action'][0],
-                    array_slice($options['action'], 1)
-                );
+            $action = is_array($options['action']) ? $options['action'][0] : $options['action'];
+            $parameters = is_array($options['action']) ? array_slice($options['action'], 1) : [];
+
+            try {
+                return $this->url->action($action, $parameters);
+            } catch (\InvalidArgumentException $e) {
+                // Not a controller action: treat a plain string as the literal form action
+                // (templates ported from hand-written builders pass raw URLs here).
+                if (is_string($options['action'])) {
+                    return $options['action'];
+                }
+
+                throw $e;
             }
-            return $this->url->action($options['action']);
         }
 
         return $this->url->current();
