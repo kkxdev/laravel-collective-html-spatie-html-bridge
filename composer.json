@@ -60,6 +60,9 @@
                 "Form": "Kkxdev\\HtmlCompat\\Facades\\Form",
                 "Html": "Kkxdev\\HtmlCompat\\Facades\\Html"
             }
+        },
+        "branch-alias": {
+            "dev-master": "1.x-dev"
         }
     },
     "config": {
