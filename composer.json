@@ -3,7 +3,22 @@
     "description": "LaravelCollective/HTML compatibility wrapper backed by Spatie Laravel HTML — preserves existing Blade templates while migrating off laravelcollective/html.",
     "type": "library",
     "license": "MIT",
-    "keywords": ["laravel", "html", "form", "laravelcollective", "spatie", "compatibility", "migration"],
+    "homepage": "https://github.com/kkxdev/laravel-collective-html-spatie-html-bridge",
+    "keywords": [
+        "laravel",
+        "html",
+        "form",
+        "forms",
+        "laravelcollective",
+        "laravel-collective",
+        "spatie",
+        "spatie-html",
+        "compatibility",
+        "bridge",
+        "migration",
+        "shift",
+        "blade"
+    ],
     "authors": [
         {
             "name": "kkxdev",
@@ -12,21 +27,24 @@
     ],
     "require": {
         "php": "^8.0",
-        "illuminate/support": "^8.0|^9.0",
-        "illuminate/http": "^8.0|^9.0",
-        "illuminate/routing": "^8.0|^9.0",
-        "illuminate/session": "^8.0|^9.0",
+        "illuminate/support": "^8.0|^9.0|^10.0|^11.0|^12.0|^13.0",
+        "illuminate/http": "^8.0|^9.0|^10.0|^11.0|^12.0|^13.0",
+        "illuminate/routing": "^8.0|^9.0|^10.0|^11.0|^12.0|^13.0",
+        "illuminate/session": "^8.0|^9.0|^10.0|^11.0|^12.0|^13.0",
         "spatie/laravel-html": "^3.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.5",
-        "orchestra/testbench": "^6.0",
+        "phpunit/phpunit": "^9.5|^10.0|^11.0|^12.0",
+        "orchestra/testbench": "^6.0|^7.0|^8.0|^9.0|^10.0|^11.0",
         "mockery/mockery": "^1.4"
     },
     "autoload": {
         "psr-4": {
             "Kkxdev\\HtmlCompat\\": "src/"
-        }
+        },
+        "files": [
+            "src/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
@@ -45,11 +63,18 @@
         }
     },
     "config": {
-        "sort-packages": true,
-        "audit": {
-            "ignore": ["PKSA-8qx3-n5y5-vvnd"]
-        }
+        "sort-packages": true
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "support": {
+        "issues": "https://github.com/kkxdev/laravel-collective-html-spatie-html-bridge/issues",
+        "source": "https://github.com/kkxdev/laravel-collective-html-spatie-html-bridge"
+    },
+    "conflict": {
+        "laravelcollective/html": "*"
+    },
+    "scripts": {
+        "test": "phpunit"
+    }
 }
